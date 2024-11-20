@@ -1,39 +1,36 @@
 import psutil
 import logging
+from web.notifications_communications import Notifications
 
 class SystemDiagnostics:
+    def __init__(self):
+        self.notifications = Notifications()
+
     def check_cpu_health(self):
         """
-        Logs CPU usage and health.
+        Logs CPU usage and sends a warning if usage is high.
         """
         try:
             cpu_usage = psutil.cpu_percent(interval=1)
             logging.info(f"CPU Usage: {cpu_usage}%")
             if cpu_usage > 85:
-                logging.warning("High CPU usage detected! Consider closing unnecessary applications.")
+                self.notifications.add_notification("High CPU usage detected!", "warning")
         except Exception as e:
             logging.error(f"Error checking CPU health: {e}")
+            self.notifications.add_notification("Error checking CPU health.", "error")
 
     def check_battery_health(self):
         """
-        Logs battery health and status.
+        Logs battery health and sends a warning if the battery is low.
         """
         try:
             battery = psutil.sensors_battery()
             if battery:
                 logging.info(f"Battery Level: {battery.percent}%")
-                logging.info(f"Charging Status: {'Charging' if battery.power_plugged else 'Not Charging'}")
                 if battery.percent < 20 and not battery.power_plugged:
-                    logging.warning("Low battery! Consider plugging in the charger.")
+                    self.notifications.add_notification("Low battery! Consider plugging in the charger.", "warning")
             else:
                 logging.info("Battery information not available.")
         except Exception as e:
             logging.error(f"Error checking battery health: {e}")
-
-    def periodic_check(self):
-        """
-        Periodically runs system diagnostics.
-        """
-        self.check_cpu_health()
-        self.check_battery_health()
-        Timer(3600, self.periodic_check).start()  # Check every hour
+            self.notifications.add_notification("Error checking battery health.", "error")
