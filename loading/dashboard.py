@@ -1,5 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
+from diagnostics.software_diagnostics import SoftwareDiagnostics
+from diagnostics.system_diagnostics import SystemDiagnostics
+from diagnostics.hardware_diagnostics import HardwareDiagnostics
+from storage.storage_management import StorageManagement
 
 class Dashboard:
     def __init__(self):
@@ -17,7 +21,14 @@ class Dashboard:
         buttons_frame = tk.Frame(self.root, bg="black")
         buttons_frame.pack(pady=10)
 
-        button_labels = ["Logs/Documents", "Storage Systems", "System Diagnostics", "Hardware Controls", "Settings", "Browser"]
+        button_labels = [
+            "Logs/Documents",
+            "Storage Systems",
+            "System Diagnostics",
+            "Hardware Controls",
+            "Settings",
+            "Browser"
+        ]
         for label in button_labels:
             btn = tk.Button(
                 buttons_frame,
@@ -38,11 +49,39 @@ class Dashboard:
         self.command_entry = tk.Entry(self.root, font=("Arial", 14), width=50)
         self.command_entry.pack(pady=10)
 
-        submit_button = tk.Button(self.root, text="Submit", font=("Arial", 14), bg="gray", fg="white", command=self.process_command)
+        submit_button = tk.Button(
+            self.root,
+            text="Submit",
+            font=("Arial", 14),
+            bg="gray",
+            fg="white",
+            command=self.process_command
+        )
         submit_button.pack(pady=10)
 
     def handle_button_click(self, label):
-        messagebox.showinfo("Button Clicked", f"You clicked: {label}")
+        if label == "System Diagnostics":
+            self.run_diagnostics()
+        elif label == "Storage Systems":
+            self.show_storage_management()
+        else:
+            messagebox.showinfo("Button Clicked", f"You clicked: {label}")
+
+    def run_diagnostics(self):
+        software_diag = SoftwareDiagnostics()
+        system_diag = SystemDiagnostics()
+        hardware_diag = HardwareDiagnostics()
+
+        software_diag.scan_for_malware()
+        system_diag.check_cpu_health()
+        hardware_diag.scan_devices()
+
+        messagebox.showinfo("Diagnostics Complete", "System diagnostics have been completed.")
+
+    def show_storage_management(self):
+        storage_manager = StorageManagement()
+        storage_manager.display_storage_usage()
+        messagebox.showinfo("Storage Management", "Storage usage displayed in the logs.")
 
     def process_command(self):
         command = self.command_entry.get()
