@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
+from commands.command_input import CommandInput
+from loading.load_and_config import LoadAndConfig
 from diagnostics.software_diagnostics import SoftwareDiagnostics
 from diagnostics.system_diagnostics import SystemDiagnostics
 from diagnostics.hardware_diagnostics import HardwareDiagnostics
@@ -20,6 +22,10 @@ class Dashboard:
         self.root.geometry("800x600")
         self.root.configure(bg="black")
 
+        # Loading and Config Module
+        self.loader = LoadAndConfig()
+        self.loader.perform_loading_tasks()
+
         # Modules
         self.notifications = Notifications()
         self.storage_manager = StorageManagement()
@@ -33,6 +39,10 @@ class Dashboard:
         self.tool_manager_gui = ToolManagerGUI(tool_manager=self.tool_manager)
         self.log_viewer = LogViewer()
         self.standby_mode = StandbyMode(inactivity_threshold=300)
+
+        # Command Input (uses mic detection from loader)
+        self.command_input = CommandInput()
+        self.command_input.voice_mode = self.loader.mic_detected
 
     def create_dashboard(self):
         # Logo
@@ -128,9 +138,16 @@ class Dashboard:
         messagebox.showinfo("Browser", f"Browser launched with homepage: {homepage}")
 
     def process_command(self):
-        command = self.command_entry.get()
-        if not command.strip():
-            messagebox.showwarning("Empty Command", "Please enter a command!")
+        """
+        Process a command from the user, either via voice or text.
+        """
+        if self.command_input.voice_mode:
+            command = self.command_input.get_voice_command()
+        else:
+            command = self.command_input.get_text_command()
+
+        if command.startswith("error:"):
+            messagebox.showwarning("Command Error", command)
         else:
             self.notifications.add_notification(f"Command received: {command}", "info")
             messagebox.showinfo("Command Received", f"Processing: {command}")
