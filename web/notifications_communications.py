@@ -1,6 +1,5 @@
 import logging
 import time
-from threading import Timer
 
 class Notifications:
     def __init__(self):
@@ -23,15 +22,31 @@ class Notifications:
         elif level == "error":
             logging.error(f"Notification: {message}")
 
-    def get_notifications(self):
+    def get_notifications(self, level=None):
         """
-        Returns the list of notifications.
+        Returns the list of notifications, optionally filtered by severity level.
+        :param level: Severity level to filter by (info, warning, error).
         """
+        if level:
+            return [n for n in self.notifications if n["level"] == level]
         return self.notifications
 
-    def periodic_check(self):
+    def clear_notifications(self):
         """
-        Sends periodic health-check notifications (e.g., storage, RAM usage).
+        Clears all notifications.
         """
-        self.add_notification("Periodic system health check completed.", "info")
-        Timer(3600, self.periodic_check).start()  # Run every hour
+        self.notifications = []
+        logging.info("All notifications cleared.")
+
+    def export_notifications(self, file_path="notifications_log.txt"):
+        """
+        Exports notifications to a text file.
+        :param file_path: Path to the file to save notifications.
+        """
+        try:
+            with open(file_path, "w") as file:
+                for notification in self.notifications:
+                    file.write(f"[{notification['timestamp']}] ({notification['level']}) {notification['message']}\n")
+            logging.info(f"Notifications exported to {file_path}.")
+        except Exception as e:
+            logging.error(f"Error exporting notifications: {e}")
