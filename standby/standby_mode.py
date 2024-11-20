@@ -1,56 +1,54 @@
-import logging
-import time
-from threading import Thread
+from standby.standby_mode import StandbyMode
 
-class StandbyMode:
-    def __init__(self, inactivity_threshold=300):
-        """
-        Initializes the Standby Mode handler.
-        :param inactivity_threshold: Time in seconds before entering standby.
-        """
-        self.inactivity_threshold = inactivity_threshold
-        self.last_activity_time = time.time()
-        self.standby_active = False
+class Dashboard:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("C.A.S.S.I.E Dashboard")
+        self.root.geometry("800x600")
+        self.root.configure(bg="black")
 
-    def reset_activity_timer(self):
-        """
-        Resets the inactivity timer to the current time.
-        """
-        self.last_activity_time = time.time()
-        if self.standby_active:
-            self.exit_standby()
+        # Modules
+        self.standby_mode = StandbyMode(inactivity_threshold=300)
 
-    def enter_standby(self):
-        """
-        Enters standby mode by reducing resource usage.
-        """
-        self.standby_active = True
-        logging.info("C.A.S.S.I.E has entered Standby Mode.")
-        # Add code to disable high-resource modules here
-        # e.g., stop diagnostics, pause notifications, etc.
+    def create_dashboard(self):
+        # Logo
+        logo_label = tk.Label(self.root, text="C.A.S.S.I.E", font=("Arial", 24, "bold"), fg="white", bg="black")
+        logo_label.pack(pady=20)
 
-    def exit_standby(self):
-        """
-        Exits standby mode and resumes normal operation.
-        """
-        self.standby_active = False
-        logging.info("C.A.S.S.I.E has exited Standby Mode.")
-        # Add code to re-enable modules here
-        # e.g., resume diagnostics, restart notifications, etc.
+        # Buttons
+        buttons_frame = tk.Frame(self.root, bg="black")
+        buttons_frame.pack(pady=10)
 
-    def monitor_activity(self):
-        """
-        Monitors user activity and manages standby state.
-        """
-        while True:
-            time_since_last_activity = time.time() - self.last_activity_time
-            if time_since_last_activity > self.inactivity_threshold and not self.standby_active:
-                self.enter_standby()
-            time.sleep(5)  # Check activity every 5 seconds
+        button_labels = [
+            "Logs/Documents",
+            "Storage Systems",
+            "System Diagnostics",
+            "Hardware Controls",
+            "Settings",
+            "Browser",
+            "Notifications",
+            "Toggle Standby"
+        ]
+        for label in button_labels:
+            btn = tk.Button(
+                buttons_frame,
+                text=label,
+                font=("Arial", 14),
+                bg="gray",
+                fg="white",
+                width=20,
+                height=2,
+                command=lambda l=label: self.handle_button_click(l)
+            )
+            btn.pack(pady=5)
 
-    def start_monitoring(self):
-        """
-        Starts a background thread to monitor activity.
-        """
-        logging.info("Starting Standby Mode monitoring.")
-        Thread(target=self.monitor_activity, daemon=True).start()
+    def handle_button_click(self, label):
+        if label == "Toggle Standby":
+            self.standby_mode.toggle_standby()
+        else:
+            messagebox.showinfo("Button Clicked", f"You clicked: {label}")
+
+    def launch(self):
+        self.standby_mode.start_monitoring(parent_gui=self.root)
+        self.create_dashboard()
+        self.root.mainloop()
