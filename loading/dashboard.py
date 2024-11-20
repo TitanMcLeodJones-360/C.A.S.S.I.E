@@ -4,6 +4,9 @@ from diagnostics.software_diagnostics import SoftwareDiagnostics
 from diagnostics.system_diagnostics import SystemDiagnostics
 from diagnostics.hardware_diagnostics import HardwareDiagnostics
 from storage.storage_management import StorageManagement
+from web.web_browser import WebBrowser
+from web.web_browser_settings import WebBrowserSettings
+from web.universal_cookie_storage import UniversalCookieStorage
 from web.notifications_communications import Notifications
 
 class Dashboard:
@@ -19,6 +22,9 @@ class Dashboard:
         self.software_diag = SoftwareDiagnostics()
         self.system_diag = SystemDiagnostics()
         self.hardware_diag = HardwareDiagnostics()
+        self.browser = WebBrowser(driver_path="path/to/chromedriver")
+        self.browser_settings = WebBrowserSettings()
+        self.cookie_storage = UniversalCookieStorage()
 
     def create_dashboard(self):
         # Logo
@@ -75,6 +81,8 @@ class Dashboard:
             self.run_diagnostics()
         elif label == "Storage Systems":
             self.show_storage_management()
+        elif label == "Browser":
+            self.launch_browser()
         else:
             messagebox.showinfo("Button Clicked", f"You clicked: {label}")
 
@@ -97,6 +105,12 @@ class Dashboard:
         self.storage_manager.display_storage_usage()
         self.notifications.add_notification("Storage usage displayed.", "info")
         messagebox.showinfo("Storage Management", "Storage usage displayed in the logs.")
+
+    def launch_browser(self):
+        homepage = self.browser_settings.get_settings()["homepage"]
+        self.browser.search(homepage)
+        self.notifications.add_notification(f"Browser launched with homepage: {homepage}", "info")
+        messagebox.showinfo("Browser", f"Browser launched with homepage: {homepage}")
 
     def process_command(self):
         command = self.command_entry.get()
