@@ -4,6 +4,7 @@ from diagnostics.software_diagnostics import SoftwareDiagnostics
 from diagnostics.system_diagnostics import SystemDiagnostics
 from diagnostics.hardware_diagnostics import HardwareDiagnostics
 from storage.storage_management import StorageManagement
+from web.notifications_communications import Notifications
 
 class Dashboard:
     def __init__(self):
@@ -11,6 +12,13 @@ class Dashboard:
         self.root.title("C.A.S.S.I.E Dashboard")
         self.root.geometry("800x600")
         self.root.configure(bg="black")
+
+        # Modules
+        self.notifications = Notifications()
+        self.storage_manager = StorageManagement()
+        self.software_diag = SoftwareDiagnostics()
+        self.system_diag = SystemDiagnostics()
+        self.hardware_diag = HardwareDiagnostics()
 
     def create_dashboard(self):
         # Logo
@@ -27,7 +35,8 @@ class Dashboard:
             "System Diagnostics",
             "Hardware Controls",
             "Settings",
-            "Browser"
+            "Browser",
+            "Notifications"
         ]
         for label in button_labels:
             btn = tk.Button(
@@ -60,27 +69,33 @@ class Dashboard:
         submit_button.pack(pady=10)
 
     def handle_button_click(self, label):
-        if label == "System Diagnostics":
+        if label == "Notifications":
+            self.show_notifications()
+        elif label == "System Diagnostics":
             self.run_diagnostics()
         elif label == "Storage Systems":
             self.show_storage_management()
         else:
             messagebox.showinfo("Button Clicked", f"You clicked: {label}")
 
+    def show_notifications(self):
+        notifications = self.notifications.get_notifications()
+        if notifications:
+            notifications_text = "\n".join([f"[{n['timestamp']}] ({n['level']}) {n['message']}" for n in notifications])
+            messagebox.showinfo("Notifications", notifications_text)
+        else:
+            messagebox.showinfo("Notifications", "No notifications at this time.")
+
     def run_diagnostics(self):
-        software_diag = SoftwareDiagnostics()
-        system_diag = SystemDiagnostics()
-        hardware_diag = HardwareDiagnostics()
-
-        software_diag.scan_for_malware()
-        system_diag.check_cpu_health()
-        hardware_diag.scan_devices()
-
-        messagebox.showinfo("Diagnostics Complete", "System diagnostics have been completed.")
+        self.software_diag.scan_for_malware()
+        self.system_diag.check_cpu_health()
+        self.hardware_diag.scan_devices()
+        self.notifications.add_notification("System diagnostics completed.", "info")
+        messagebox.showinfo("Diagnostics", "System diagnostics completed. Check notifications for details.")
 
     def show_storage_management(self):
-        storage_manager = StorageManagement()
-        storage_manager.display_storage_usage()
+        self.storage_manager.display_storage_usage()
+        self.notifications.add_notification("Storage usage displayed.", "info")
         messagebox.showinfo("Storage Management", "Storage usage displayed in the logs.")
 
     def process_command(self):
@@ -88,6 +103,7 @@ class Dashboard:
         if not command.strip():
             messagebox.showwarning("Empty Command", "Please enter a command!")
         else:
+            self.notifications.add_notification(f"Command received: {command}", "info")
             messagebox.showinfo("Command Received", f"Processing: {command}")
 
     def launch(self):
