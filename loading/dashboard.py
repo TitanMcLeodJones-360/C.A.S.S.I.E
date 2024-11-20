@@ -8,6 +8,8 @@ from web.web_browser import WebBrowser
 from web.web_browser_settings import WebBrowserSettings
 from web.universal_cookie_storage import UniversalCookieStorage
 from web.notifications_communications import Notifications
+from tools.tool_manager import ToolManager
+from standby.standby_mode import StandbyMode
 
 class Dashboard:
     def __init__(self):
@@ -25,6 +27,8 @@ class Dashboard:
         self.browser = WebBrowser(driver_path="path/to/chromedriver")
         self.browser_settings = WebBrowserSettings()
         self.cookie_storage = UniversalCookieStorage()
+        self.tool_manager = ToolManager()
+        self.standby_mode = StandbyMode(inactivity_threshold=300)
 
     def create_dashboard(self):
         # Logo
@@ -81,6 +85,8 @@ class Dashboard:
             self.run_diagnostics()
         elif label == "Storage Systems":
             self.show_storage_management()
+        elif label == "Hardware Controls":
+            self.manage_tools()
         elif label == "Browser":
             self.launch_browser()
         else:
@@ -96,7 +102,7 @@ class Dashboard:
 
     def run_diagnostics(self):
         self.software_diag.scan_for_malware()
-        self.system_diag.check_cpu_health()
+        self.system_diag.run_full_diagnostics()
         self.hardware_diag.scan_devices()
         self.notifications.add_notification("System diagnostics completed.", "info")
         messagebox.showinfo("Diagnostics", "System diagnostics completed. Check notifications for details.")
@@ -105,6 +111,14 @@ class Dashboard:
         self.storage_manager.display_storage_usage()
         self.notifications.add_notification("Storage usage displayed.", "info")
         messagebox.showinfo("Storage Management", "Storage usage displayed in the logs.")
+
+    def manage_tools(self):
+        # Example setup: Adding, controlling, and listing devices
+        self.tool_manager.add_device("camera", "Living Room Camera", "192.168.1.10")
+        self.tool_manager.add_device("smartplug", "Desk Plug", "192.168.1.11")
+        self.tool_manager.control_device("Desk Plug", "on")
+        devices = self.tool_manager.list_devices()
+        messagebox.showinfo("Hardware Controls", f"Devices:\n{devices}")
 
     def launch_browser(self):
         homepage = self.browser_settings.get_settings()["homepage"]
@@ -121,5 +135,6 @@ class Dashboard:
             messagebox.showinfo("Command Received", f"Processing: {command}")
 
     def launch(self):
+        self.standby_mode.start_monitoring()
         self.create_dashboard()
         self.root.mainloop()
