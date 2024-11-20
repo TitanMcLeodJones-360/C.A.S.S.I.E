@@ -8,8 +8,10 @@ from web.web_browser import WebBrowser
 from web.web_browser_settings import WebBrowserSettings
 from web.universal_cookie_storage import UniversalCookieStorage
 from web.notifications_communications import Notifications
-from tools.tool_manager import ToolManager
+from tools.tool_manager_gui import ToolManagerGUI
+from logging.log_viewer import LogViewer
 from standby.standby_mode import StandbyMode
+from tools.tool_manager import ToolManager
 
 class Dashboard:
     def __init__(self):
@@ -28,6 +30,8 @@ class Dashboard:
         self.browser_settings = WebBrowserSettings()
         self.cookie_storage = UniversalCookieStorage()
         self.tool_manager = ToolManager()
+        self.tool_manager_gui = ToolManagerGUI(tool_manager=self.tool_manager)
+        self.log_viewer = LogViewer()
         self.standby_mode = StandbyMode(inactivity_threshold=300)
 
     def create_dashboard(self):
@@ -46,7 +50,8 @@ class Dashboard:
             "Hardware Controls",
             "Settings",
             "Browser",
-            "Notifications"
+            "Notifications",
+            "Toggle Standby"
         ]
         for label in button_labels:
             btn = tk.Button(
@@ -79,16 +84,20 @@ class Dashboard:
         submit_button.pack(pady=10)
 
     def handle_button_click(self, label):
-        if label == "Notifications":
+        if label == "Logs/Documents":
+            self.log_viewer.show_logs()
+        elif label == "Notifications":
             self.show_notifications()
         elif label == "System Diagnostics":
             self.run_diagnostics()
         elif label == "Storage Systems":
             self.show_storage_management()
         elif label == "Hardware Controls":
-            self.manage_tools()
+            self.tool_manager_gui.show_tool_manager()
         elif label == "Browser":
             self.launch_browser()
+        elif label == "Toggle Standby":
+            self.standby_mode.toggle_standby()
         else:
             messagebox.showinfo("Button Clicked", f"You clicked: {label}")
 
@@ -112,14 +121,6 @@ class Dashboard:
         self.notifications.add_notification("Storage usage displayed.", "info")
         messagebox.showinfo("Storage Management", "Storage usage displayed in the logs.")
 
-    def manage_tools(self):
-        # Example setup: Adding, controlling, and listing devices
-        self.tool_manager.add_device("camera", "Living Room Camera", "192.168.1.10")
-        self.tool_manager.add_device("smartplug", "Desk Plug", "192.168.1.11")
-        self.tool_manager.control_device("Desk Plug", "on")
-        devices = self.tool_manager.list_devices()
-        messagebox.showinfo("Hardware Controls", f"Devices:\n{devices}")
-
     def launch_browser(self):
         homepage = self.browser_settings.get_settings()["homepage"]
         self.browser.search(homepage)
@@ -135,6 +136,6 @@ class Dashboard:
             messagebox.showinfo("Command Received", f"Processing: {command}")
 
     def launch(self):
-        self.standby_mode.start_monitoring()
+        self.standby_mode.start_monitoring(parent_gui=self.root)
         self.create_dashboard()
         self.root.mainloop()
