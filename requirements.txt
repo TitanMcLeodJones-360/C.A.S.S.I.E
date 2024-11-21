@@ -1,0 +1,31 @@
+# Core dependencies
+tkinter           # GUI library (built into Python, not installable via pip)
+
+# OpenAI API
+openai==0.27.8    # OpenAI Python client library
+
+# Web Browser with Selenium
+selenium==4.12.0  # For web browser automation
+
+# Speech Recognition
+SpeechRecognition==3.8.1  # For microphone and voice-to-text
+pyaudio            # Needed for microphone input (install via pipwin on Windows)
+
+# Notifications and Logging
+logging            # Built into Python, included for completeness
+
+# Requests and HTTP Handling
+requests==2.32.3   # For handling API requests
+beautifulsoup4==4.12.3  # For additional web scraping if needed
+
+# Diagnostic and System Tools
+psutil==5.9.7      # For CPU, RAM, battery, and storage diagnostics
+
+# PyInstaller (optional, for bundling the app into an executable)
+pyinstaller==5.11  # For converting the Python app to a standalone executable
+
+# Chromium Driver Helper
+chromedriver-autoinstaller==0.6.2  # Automatically download and manage ChromeDriver
+
+# Utilities for Windows (e.g., pyaudio installation)
+pipwin==0.5.2      # Simplifies installation of Windows-specific binaries
