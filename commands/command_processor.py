@@ -1,6 +1,7 @@
 import openai
 import logging
 
+
 class CommandProcessor:
     def __init__(self, dashboard):
         """
@@ -26,10 +27,11 @@ class CommandProcessor:
         """
         if not self.api_key:
             logging.error("OpenAI API Key is not set.")
+            self.dashboard.notifications.add_notification("OpenAI API Key is not configured.", "error")
             return None
-        
+
         openai.api_key = self.api_key
-        
+
         try:
             response = openai.Completion.create(
                 engine="text-davinci-003",  # Use a GPT model
@@ -41,7 +43,33 @@ class CommandProcessor:
             return interpreted_command
         except openai.error.OpenAIError as e:
             logging.error(f"OpenAI API error: {e}")
+            self.dashboard.notifications.add_notification(f"OpenAI API Error: {e}", "error")
             return None
+
+    def generate_response_with_openai(self, prompt):
+        """
+        Use OpenAI to generate a response to a user query.
+        :param prompt: The query for OpenAI to respond to.
+        :return: The generated response.
+        """
+        if not self.api_key:
+            logging.error("OpenAI API Key is not set.")
+            return "Error: OpenAI API Key is not configured."
+
+        openai.api_key = self.api_key
+
+        try:
+            response = openai.Completion.create(
+                engine="text-davinci-003",
+                prompt=prompt,
+                max_tokens=100
+            )
+            generated_response = response.choices[0].text.strip()
+            logging.info(f"OpenAI generated response: {generated_response}")
+            return generated_response
+        except openai.error.OpenAIError as e:
+            logging.error(f"OpenAI API error: {e}")
+            return "Error: Unable to process your request at this time."
 
     def process_command(self, command):
         """
@@ -56,14 +84,15 @@ class CommandProcessor:
             interpreted_command = self.interpret_with_openai(command)
             if interpreted_command:
                 action = self.commands.get(interpreted_command)
-        
+
         if action:
             logging.info(f"Executing command: {command}")
             action()
         else:
             logging.warning(f"Unknown command: {command}")
             self.dashboard.notifications.add_notification(f"Unknown command: {command}", "warning")
-            self.dashboard.show_message("Unknown Command", f"The command '{command}' is not recognized.")
+            response = self.generate_response_with_openai(f"The command '{command}' is not recognized. Suggest an alternative action.")
+            self.dashboard.show_message("Unknown Command", response)
 
     def exit_application(self):
         """
